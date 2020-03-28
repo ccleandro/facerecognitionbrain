@@ -16,7 +16,7 @@ const FaceRecognition = ({ box, imageUrl }) => {
           {box.map(item => {
             return (
               <div
-                key={box.topRow}
+                key={Math.random()}
                 className="bounding-box"
                 style={{
                   top: item.topRow,

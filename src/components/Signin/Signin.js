@@ -17,6 +17,13 @@ class Signin extends Component {
     this.setState({ signInPassword: event.target.value });
   };
 
+  saveAuthTokenInSession = token => {
+    //keep the key value even if another page is open
+    //window.localStorage.setItem("token", token);
+    //single and recomendate session, only for the actual page
+    window.sessionStorage.setItem("token", token);
+  };
+
   onSubmitSignIn = () => {
     fetch("http://localhost:3000/signin", {
       method: "post",
@@ -27,12 +34,28 @@ class Signin extends Component {
       })
     })
       .then(response => response.json())
-      .then(user => {
-        if (user.id) {
-          this.props.loadUser(user);
-          this.props.onRouteChange("home");
+      .then(data => {
+        if (data.userId && data.success === "true") {
+          this.saveAuthTokenInSession(data.token);
+          // this.props.loadUser(data);
+          // this.props.onRouteChange("home");
+          fetch(`http://localhost:3000/profile/${data.userId}`, {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: data.token
+            }
+          })
+            .then(resp => resp.json())
+            .then(user => {
+              if (user && user.email) {
+                this.props.loadUser(user);
+                this.props.onRouteChange("home");
+              }
+            });
         }
-      });
+      })
+      .catch(err => console.log(err));
   };
 
   render() {
